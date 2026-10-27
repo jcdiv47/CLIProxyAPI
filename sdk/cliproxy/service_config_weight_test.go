@@ -75,3 +75,17 @@ func TestApplyManagerConfigStopsReplacedServiceAffinitySelector(t *testing.T) {
 		t.Fatal("expected replaced selector to be stopped during routing config apply")
 	}
 }
+
+func TestLeastUsedRoutingSelector(t *testing.T) {
+	for _, input := range []string{"least-used", "leastused", "LU"} {
+		state := normalizedRoutingRuntimeState(&internalconfig.Config{
+			Routing: internalconfig.RoutingConfig{Strategy: input},
+		})
+		if state.strategy != "least-used" {
+			t.Fatalf("strategy(%q) = %q, want least-used", input, state.strategy)
+		}
+		if _, ok := newRoutingSelector(state).(*coreauth.LeastUsedSelector); !ok {
+			t.Fatalf("selector type = %T, want *auth.LeastUsedSelector", newRoutingSelector(state))
+		}
+	}
+}
